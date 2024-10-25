@@ -1,15 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'task_screen.dart'; // Import the task screen for accessing TaskNotifier
 
-class HistoryScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> completedTasks;
+// Define a provider for completed tasks
+final completedTasksProvider = ChangeNotifierProvider<CompletedTasksNotifier>((ref) {
+  return CompletedTasksNotifier();
+});
 
-  const HistoryScreen({required this.completedTasks});
+// Completed Tasks Notifier
+class CompletedTasksNotifier extends ChangeNotifier {
+  List<Map<String, dynamic>> _completedTasks = [];
 
+  List<Map<String, dynamic>> get completedTasks => _completedTasks;
+
+  void addCompletedTask(Map<String, dynamic> task) {
+    _completedTasks.add(task);
+    notifyListeners(); // Notify listeners to update UI
+  }
+}
+
+class HistoryScreen extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final List<Map<String, dynamic>> completedTasks = ref.watch(completedTasksProvider).completedTasks;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFFE18AAA), // Charm Pink
+        backgroundColor: Color(0xFFE18AAA),
         centerTitle: true,
         title: Text(
           'Completed Tasks',
