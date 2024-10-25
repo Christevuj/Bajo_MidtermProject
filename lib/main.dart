@@ -1,111 +1,119 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
-  runApp(TaskApp());
+  runApp(const ProviderScope(child: TaskApp()));
 }
 
 class TaskApp extends StatelessWidget {
+  const TaskApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'TASKINATOR',
-      home: HomeScreen(),
+      home: const HomeScreen(),
     );
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  @override
-  _HomeScreenState createState() => _HomeScreenState();
+// Define a provider for tasks
+final tasksProvider = StateNotifierProvider<TasksNotifier, List<Map<String, dynamic>>>((ref) {
+  return TasksNotifier();
+});
+
+// Define a provider for completed tasks
+final completedTasksProvider = StateNotifierProvider<CompletedTasksNotifier, List<Map<String, dynamic>>>((ref) {
+  return CompletedTasksNotifier();
+});
+
+// Tasks Notifier
+class TasksNotifier extends StateNotifier<List<Map<String, dynamic>>> {
+  TasksNotifier() : super([]);
+
+  void addTask(Map<String, dynamic> task) {
+    state = [...state, task];
+  }
+
+  void removeTask(String task) {
+    state = state.where((t) => t['task'] != task).toList();
+  }
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  final List<Map<String, dynamic>> _tasks = [];
-  final List<Map<String, dynamic>> _completedTasks = []; // List for completed tasks
-  final TextEditingController _controller = TextEditingController();
-  DateTime? _selectedDate;
-  TimeOfDay? _selectedTime;
+// Completed Tasks Notifier
+class CompletedTasksNotifier extends StateNotifier<List<Map<String, dynamic>>> {
+  CompletedTasksNotifier() : super([]);
 
-  void _addTask() {
-    if (_controller.text.isNotEmpty && _selectedDate != null && _selectedTime != null) {
-      setState(() {
-        _tasks.add({
-          'task': _controller.text,
-          'date': _selectedDate,
-          'time': _selectedTime,
+  void addCompletedTask(Map<String, dynamic> task) {
+    state = [...state, task];
+  }
+}
+
+class HomeScreen extends ConsumerWidget {
+  const HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(tasksProvider);
+    final TextEditingController controller = TextEditingController();
+    DateTime? selectedDate;
+    TimeOfDay? selectedTime;
+
+    void addTask() {
+      if (controller.text.isNotEmpty && selectedDate != null && selectedTime != null) {
+        ref.read(tasksProvider.notifier).addTask({
+          'task': controller.text,
+          'date': selectedDate,
+          'time': selectedTime,
         });
-        _controller.clear();
-        _selectedDate = null;
-        _selectedTime = null;
-      });
+        controller.clear();
+        selectedDate = null;
+        selectedTime = null;
+      }
     }
-  }
 
-  Future<void> _pickDate() async {
-    DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
+    Future<void> pickDate() async {
+      DateTime? pickedDate = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2100),
+      );
 
-    if (pickedDate != null) {
-      setState(() {
-        _selectedDate = pickedDate;
-      });
+      if (pickedDate != null) {
+        selectedDate = pickedDate;
+      }
     }
-  }
 
-  Future<void> _pickTime() async {
-    TimeOfDay? pickedTime = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
+    Future<void> pickTime() async {
+      TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+      );
 
-    if (pickedTime != null) {
-      setState(() {
-        _selectedTime = pickedTime;
-      });
+      if (pickedTime != null) {
+        selectedTime = pickedTime;
+      }
     }
-  }
 
-  void _removeTask(String task) {
-    setState(() {
-      _tasks.removeWhere((t) => t['task'] == task);
-    });
-  }
-
-  void _markTaskAsComplete(Map<String, dynamic> task) {
-    setState(() {
-      _completedTasks.add(task); // Add task to completed tasks
-      _tasks.remove(task); // Remove from active tasks
-    });
-  }
-
-  void _navigateToTasks() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => TaskListScreen(
-          tasks: _tasks,
-          markComplete: _markTaskAsComplete,
-          removeTask: _removeTask,
+    void navigateToTasks() {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TaskListScreen(),
         ),
-      ),
-    );
-  }
+      );
+    }
 
-  void _navigateToHistory() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => HistoryScreen(completedTasks: _completedTasks),
-      ),
-    );
-  }
+    void navigateToHistory() {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HistoryScreen(),
+        ),
+      );
+    }
 
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color(0xFFE18AAA), // Charm Pink
@@ -124,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: TextField(
-              controller: _controller,
+              controller: controller,
               decoration: InputDecoration(
                 hintText: 'Enter a task',
                 border: OutlineInputBorder(),
@@ -136,23 +144,23 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(
-                onPressed: _pickDate,
-                child: Text(_selectedDate == null
+                onPressed: pickDate,
+                child: Text(selectedDate == null
                     ? 'Pick Date'
-                    : '${_selectedDate!.toLocal()}'.split(' ')[0]),
+                    : '${selectedDate!.toLocal()}'.split(' ')[0]),
               ),
               SizedBox(width: 10),
               ElevatedButton(
-                onPressed: _pickTime,
-                child: Text(_selectedTime == null
+                onPressed: pickTime,
+                child: Text(selectedTime == null
                     ? 'Pick Time'
-                    : _selectedTime!.format(context)),
+                    : selectedTime!.format(context)),
               ),
             ],
           ),
           SizedBox(height: 30),
           ElevatedButton(
-            onPressed: _addTask,
+            onPressed: addTask,
             child: Text('Add Task', style: TextStyle(color: Colors.black)), // Set font color to black
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFFE4A0B7), // Set the button color to Kobi
@@ -181,9 +189,9 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
         onTap: (index) {
           if (index == 1) {
-            _navigateToTasks();
+            navigateToTasks();
           } else if (index == 2) {
-            _navigateToHistory();
+            navigateToHistory();
           }
         },
       ),
@@ -191,19 +199,22 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class TaskListScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> tasks;
-  final Function(Map<String, dynamic>) markComplete;
-  final Function(String) removeTask;
-
-  const TaskListScreen({
-    required this.tasks,
-    required this.markComplete,
-    required this.removeTask,
-  });
-
+class TaskListScreen extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final List<Map<String, dynamic>> tasks = ref.watch(tasksProvider);
+
+    void markComplete(Map<String, dynamic> task) {
+      ref.read(completedTasksProvider.notifier).addCompletedTask(task);
+      ref.read(tasksProvider.notifier).removeTask(task['task']);
+      Navigator.pop(context); // Go back after marking complete
+    }
+
+    void removeTask(String task) {
+      ref.read(tasksProvider.notifier).removeTask(task);
+      Navigator.pop(context); // Go back after deleting
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color(0xFFE18AAA), // Charm Pink
@@ -232,14 +243,12 @@ class TaskListScreen extends StatelessWidget {
                   icon: Icon(Icons.check, color: Colors.green),
                   onPressed: () {
                     markComplete(task);
-                    Navigator.pop(context); // Go back after marking complete
                   },
                 ),
                 IconButton(
                   icon: Icon(Icons.delete, color: Colors.red),
                   onPressed: () {
                     removeTask(task['task']);
-                    Navigator.pop(context); // Go back after deleting
                   },
                 ),
               ],
@@ -251,13 +260,11 @@ class TaskListScreen extends StatelessWidget {
   }
 }
 
-class HistoryScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> completedTasks;
-
-  const HistoryScreen({required this.completedTasks});
-
+class HistoryScreen extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final List<Map<String, dynamic>> completedTasks = ref.watch(completedTasksProvider);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color(0xFFE18AAA), // Charm Pink
