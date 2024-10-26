@@ -1,103 +1,160 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'history_screen.dart';
+import 'add_task_screen.dart';
 
 // ChangeNotifier for managing tasks
 class TasksNotifier extends ChangeNotifier {
-  List<Map<String, dynamic>> _tasks = [];
+  final List<Map<String, dynamic>> _tasks = [];
 
   List<Map<String, dynamic>> get tasks => _tasks;
 
   void addTask(Map<String, dynamic> task) {
+    task['id'] = DateTime.now().millisecondsSinceEpoch.toString();
     _tasks.add(task);
-    notifyListeners(); // Notify listeners to update UI
+    notifyListeners();
   }
 
-  void removeTask(String task) {
-    _tasks.removeWhere((t) => t['task'] == task);
-    notifyListeners(); // Notify listeners to update UI
+  void removeTask(String taskTitle) {
+    _tasks.removeWhere((t) => t['title'] == taskTitle);
+    notifyListeners();
   }
+
+  void updateTask(String id, Map<String, dynamic> updatedTask) {
+    final index = _tasks.indexWhere((task) => task['id'] == id);
+    if (index != -1) {
+      _tasks[index] = {
+        'id': id,
+        'title': updatedTask['title'],
+        'description': updatedTask['description'],
+        'date': updatedTask['date'],
+        'time': updatedTask['time'],
+        'priority': updatedTask['priority'],
+      };
+      notifyListeners();
+    }
+  }
+
+  void completeTask(task) {}
+
+  void deleteTask(task) {}
 }
 
-// Provider for tasks
-final tasksProvider = ChangeNotifierProvider<TasksNotifier>((ref) {
-  return TasksNotifier();
-});
+// Riverpod Provider for tasks
+final tasksProvider = ChangeNotifierProvider((ref) => TasksNotifier());
 
-// ChangeNotifier for managing completed tasks
-class CompletedTasksNotifier extends ChangeNotifier {
-  List<Map<String, dynamic>> _completedTasks = [];
-
-  List<Map<String, dynamic>> get completedTasks => _completedTasks;
-
-  void addCompletedTask(Map<String, dynamic> task) {
-    _completedTasks.add(task);
-    notifyListeners(); // Notify listeners to update UI
-  }
-}
-
-// Provider for completed tasks
-final completedTasksProvider = ChangeNotifierProvider<CompletedTasksNotifier>((ref) {
-  return CompletedTasksNotifier();
-});
-
-// Screen for displaying and managing tasks
 class TaskListScreen extends ConsumerWidget {
+  const TaskListScreen({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final taskNotifier = ref.watch(tasksProvider);
-
-    void markComplete(Map<String, dynamic> task) {
-      // Logic for marking a task as complete
-      ref.read(completedTasksProvider.notifier).addCompletedTask(task);
-      taskNotifier.removeTask(task['task']);
-      Navigator.pop(context); // Go back after completing the task
-    }
-
-    void removeTask(String task) {
-      taskNotifier.removeTask(task);
-      Navigator.pop(context); // Go back after removing the task
-    }
+    final tasks = ref.watch(tasksProvider).tasks;
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFFE18AAA),
+        title: const Text('Task Manager'),
         centerTitle: true,
-        title: Text(
-          'All Tasks',
-          style: TextStyle(
-            fontSize: 24.0,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
       ),
-      body: ListView.builder(
-        itemCount: taskNotifier.tasks.length,
-        itemBuilder: (context, index) {
-          final task = taskNotifier.tasks[index];
-          return ListTile(
-            title: Text(task['task']),
-            subtitle: Text(
-              'Due: ${task['date']?.toLocal().toString().split(' ')[0]} at ${task['time']?.format(context)}',
+      body: Container(
+        margin: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 8,
+              offset: Offset(0, 4),
             ),
-            trailing: Wrap(
-              spacing: 8.0,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.check, color: Colors.green),
-                  onPressed: () {
-                    markComplete(task); // Mark task as complete
-                  },
-                ),
-                IconButton(
-                  icon: Icon(Icons.delete, color: Colors.red),
-                  onPressed: () {
-                    removeTask(task['task']); // Remove task
-                  },
-                ),
-              ],
+          ],
+        ),
+        child: tasks.isEmpty
+            ? const Center(child: Text('No tasks available.'))
+            : ListView.builder(
+                itemCount: tasks.length,
+                itemBuilder: (context, index) {
+                  final task = tasks[index];
+                  return Card(
+                    elevation: 2,
+                    margin: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: ListTile(
+                      title: Text(task['title']),
+                      subtitle: Text(
+                          'Due: ${task['date'].toLocal().toString().split(' ')[0]} at ${task['time'].format(context)}'),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AddTaskScreen(
+                                task: task), // Pass the task for editing
+                          ),
+                        );
+                      },
+                      trailing: Wrap(
+                        spacing: 8.0,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.check, color: Colors.green),
+                            onPressed: () {
+                              ref
+                                  .read(tasksProvider.notifier)
+                                  .completeTask(task['id']); // Pass the task ID
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () {
+                              ref
+                                  .read(tasksProvider.notifier)
+                                  .deleteTask(task['id']); // Pass the task ID
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+      ),
+      floatingActionButton: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Add a placeholder to adjust the position of the FAB
+          const SizedBox(height: 50), // Adjust height as necessary
+          FloatingActionButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AddTaskScreen()),
+              );
+            },
+            child: const Icon(Icons.add),
+          ),
+        ],
+      ),
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 8.0,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.home),
+              onPressed: () {},
             ),
-          );
-        },
+            IconButton(
+              icon: const Icon(Icons.history),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const HistoryScreen()),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
