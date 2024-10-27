@@ -42,7 +42,7 @@ class LandingPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   const Text(
-                    'A workspace to over 10 Million influencers\naround the global of the world.',
+                    'where all people love to procrastinate',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 16,
