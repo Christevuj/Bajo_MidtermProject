@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dashboard.dart'; // Import your dashboard file
+import 'dashboard.dart'; 
 
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
@@ -13,15 +13,15 @@ class LandingPage extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color.fromARGB(255, 190, 117, 190), // Top gradient color (blue)
-              Color.fromARGB(255, 210, 205, 210), // Bottom gradient color (light blue)
+              Color.fromARGB(255, 190, 117, 190), 
+              Color.fromARGB(255, 210, 205, 210), 
             ],
           ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Main illustration and text
+            
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -52,7 +52,7 @@ class LandingPage extends StatelessWidget {
                 ],
               ),
             ),
-            // "Let's Start" button
+         
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
               child: ElevatedButton(
@@ -64,7 +64,7 @@ class LandingPage extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color.fromARGB(255, 190, 117, 190), // Button color
+                  backgroundColor: Color.fromARGB(255, 190, 117, 190), 
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),

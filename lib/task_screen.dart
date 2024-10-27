@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'history_screen.dart';
 import 'add_task_screen.dart';
 
-// ChangeNotifier for managing tasks
 class TasksNotifier extends ChangeNotifier {
   final List<Map<String, dynamic>> _tasks = [];
 
@@ -86,8 +85,7 @@ class TaskListScreen extends ConsumerWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => AddTaskScreen(
-                                task: task), // Pass the task for editing
+                            builder: (context) => AddTaskScreen(task: task),
                           ),
                         );
                       },
@@ -99,7 +97,7 @@ class TaskListScreen extends ConsumerWidget {
                             onPressed: () {
                               ref
                                   .read(tasksProvider.notifier)
-                                  .completeTask(task['id']); // Pass the task ID
+                                  .completeTask(task['id']);
                             },
                           ),
                           IconButton(
@@ -107,7 +105,7 @@ class TaskListScreen extends ConsumerWidget {
                             onPressed: () {
                               ref
                                   .read(tasksProvider.notifier)
-                                  .deleteTask(task['id']); // Pass the task ID
+                                  .deleteTask(task['id']);
                             },
                           ),
                         ],
@@ -120,8 +118,7 @@ class TaskListScreen extends ConsumerWidget {
       floatingActionButton: Stack(
         alignment: Alignment.center,
         children: [
-          // Add a placeholder to adjust the position of the FAB
-          const SizedBox(height: 50), // Adjust height as necessary
+          const SizedBox(height: 50),
           FloatingActionButton(
             onPressed: () {
               Navigator.push(

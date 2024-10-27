@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart'; // For date formatting
-import 'tasks_provider.dart'; // Import the tasks provider
+import 'package:intl/intl.dart';
+import 'tasks_provider.dart';
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
@@ -18,30 +18,27 @@ class HistoryScreen extends ConsumerWidget {
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Color.fromARGB(255, 255, 255, 255), // Set text color to white
+            color: Color.fromARGB(255, 255, 255, 255),
           ),
         ),
         centerTitle: true,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                Color.fromARGB(255, 190, 117, 190), // Violet
-                Color(0xFFE5D0FF)
-              ], // Gradient colors
+              colors: [Color.fromARGB(255, 190, 117, 190), Color(0xFFE5D0FF)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
           ),
         ),
-        elevation: 4, // Add shadow
-        iconTheme: const IconThemeData(color: Colors.white), // Set back button color to white
+        elevation: 4,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: completedTasks.isEmpty && deletedTasks.isEmpty
           ? Center(
               child: Text(
                 'No completed tasks or deleted tasks available.',
-                style: const TextStyle(fontSize: 14), // Adjusted font size
+                style: const TextStyle(fontSize: 14),
               ),
             )
           : ListView(
@@ -49,13 +46,11 @@ class HistoryScreen extends ConsumerWidget {
                 const Padding(
                   padding: EdgeInsets.all(16.0),
                 ),
-                // Display completed tasks
                 ...completedTasks.map((task) => GestureDetector(
                       onTap: () => _showTaskDetails(context, task),
                       child: _buildTaskContainer(
                         task: task,
-                        icon: Icons
-                            .check_circle, // Check-circle icon for completed tasks
+                        icon: Icons.check_circle,
                         iconColor: Colors.green,
                         backgroundColor: Colors.grey[200]!,
                       ),
@@ -63,12 +58,11 @@ class HistoryScreen extends ConsumerWidget {
                 const Padding(
                   padding: EdgeInsets.all(16.0),
                 ),
-                // Display deleted tasks
                 ...deletedTasks.map((task) => GestureDetector(
                       onTap: () => _showTaskDetails(context, task),
                       child: _buildTaskContainer(
                         task: task,
-                        icon: Icons.delete, // Delete icon for deleted tasks
+                        icon: Icons.delete,
                         iconColor: Colors.red,
                         backgroundColor: Colors.red[100]!,
                       ),
@@ -93,8 +87,8 @@ class HistoryScreen extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, color: iconColor, size: 28), // Task icon on the left
-          const SizedBox(width: 16), // Spacing between icon and title
+          Icon(icon, color: iconColor, size: 28),
+          const SizedBox(width: 16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -112,7 +106,6 @@ class HistoryScreen extends ConsumerWidget {
   }
 
   void _showTaskDetails(BuildContext context, Map<String, dynamic> task) {
-    // Format the date to show only the date portion
     final formattedDate = DateFormat('yyyy-MM-dd').format(task['date']);
 
     showDialog(
@@ -126,8 +119,7 @@ class HistoryScreen extends ConsumerWidget {
             children: [
               Text('Description: ${task['description']}'),
               Text('Date: $formattedDate'),
-              Text(
-                  'Time: ${task['time'].format(context)}'), // Use TimeOfDay conversion
+              Text('Time: ${task['time'].format(context)}'),
               Text('Priority: ${task['priority']}'),
             ],
           ),

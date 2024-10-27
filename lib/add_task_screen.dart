@@ -95,8 +95,8 @@ class _AddTaskScreenState extends ConsumerState<AddTaskScreen> {
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Color.fromARGB(255, 190, 117, 190), // Violet
-                Color(0xFFE5D0FF), // Light Lavender
+                Color.fromARGB(255, 190, 117, 190), 
+                Color(0xFFE5D0FF), 
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -104,7 +104,7 @@ class _AddTaskScreenState extends ConsumerState<AddTaskScreen> {
           ),
         ),
         title: const Text(
-          'Create a Task', // Updated title
+          'Create a Task', 
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -186,7 +186,7 @@ class _AddTaskScreenState extends ConsumerState<AddTaskScreen> {
                                 ? 'Pick Date'
                                 : '${_selectedDate!.toLocal().toString().split(' ')[0]}'),
                             style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 17), // Increased height
+                              padding: const EdgeInsets.symmetric(vertical: 17), 
                             ),
                           ),
                         ),
@@ -199,7 +199,7 @@ class _AddTaskScreenState extends ConsumerState<AddTaskScreen> {
                                 ? 'Pick Time'
                                 : _selectedTime!.format(context)),
                             style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 17), // Increased height
+                              padding: const EdgeInsets.symmetric(vertical: 17), 
                             ),
                           ),
                         ),
@@ -241,8 +241,8 @@ class _AddTaskScreenState extends ConsumerState<AddTaskScreen> {
 
   Widget _buildPriorityButton(String priority, Color bgColor, Color borderColor) {
     return SizedBox(
-      height: 40, // Increased height
-      width: 150, // Increased width
+      height: 40, 
+      width: 150, 
       child: ElevatedButton(
         onPressed: () => setState(() => _selectedPriority = priority),
         style: ElevatedButton.styleFrom(

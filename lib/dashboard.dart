@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bajo_flutterapp/add_task_screen.dart';
 import 'package:bajo_flutterapp/history_screen.dart';
-import 'tasks_provider.dart'; // Import the tasks provider
-import 'edit_task_screen.dart'; // Import the edit task screen
+import 'tasks_provider.dart';
+import 'edit_task_screen.dart';
 
 class Dashboard extends ConsumerWidget {
   const Dashboard({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final List<Map<String, dynamic>> tasks = ref.watch(tasksProvider); // Watch the tasks list
+    final List<Map<String, dynamic>> tasks = ref.watch(tasksProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -20,7 +20,7 @@ class Dashboard extends ConsumerWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Color.fromARGB(255, 190, 117, 190), // Violet
+                Color.fromARGB(255, 190, 117, 190),
                 Color(0xFFE5D0FF),
               ],
             ),
@@ -46,7 +46,7 @@ class Dashboard extends ConsumerWidget {
           ],
         ),
         iconTheme: const IconThemeData(
-          color: Colors.white, // Set back button color to white
+          color: Colors.white,
         ),
       ),
       body: tasks.isEmpty
@@ -66,7 +66,9 @@ class Dashboard extends ConsumerWidget {
                     child: TaskCard(
                       task: task,
                       onComplete: () {
-                        ref.read(tasksProvider.notifier).completeTask(task['id']);
+                        ref
+                            .read(tasksProvider.notifier)
+                            .completeTask(task['id']);
                       },
                       onDelete: () {
                         ref.read(tasksProvider.notifier).deleteTask(task['id']);
@@ -129,7 +131,8 @@ class TaskCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildRowWithIcon(
-              Icons.description, task['description'] ?? 'No description available',
+              Icons.description,
+              task['description'] ?? 'No description available',
             ),
             const SizedBox(height: 4),
             _buildRowWithIcon(
@@ -137,8 +140,8 @@ class TaskCard extends StatelessWidget {
               'Date: ${task['date']?.toLocal().toString().split(' ')[0] ?? 'N/A'}',
             ),
             _buildRowWithIcon(
-              Icons.access_time, 
-              'Time: ${_formatTime(task['time'])}', // Format time here
+              Icons.access_time,
+              'Time: ${_formatTime(task['time'])}',
             ),
             const SizedBox(height: 4),
             _buildRowWithIcon(
@@ -210,8 +213,8 @@ class TaskCard extends StatelessWidget {
     if (time == null) {
       return 'N/A';
     }
-    // Format TimeOfDay to a string in "HH:MM" format
-    final hour = time.hour % 12; // Convert to 12-hour format
+
+    final hour = time.hour % 12;
     final minute = time.minute.toString().padLeft(2, '0');
     final suffix = time.hour >= 12 ? 'PM' : 'AM';
     return '$hour:$minute $suffix';

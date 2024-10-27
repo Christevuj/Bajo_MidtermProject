@@ -86,8 +86,8 @@ class _EditTaskScreenState extends ConsumerState<EditTaskScreen> {
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Color(0xFF7E60BF), // Violet
-                Color(0xFFE5D0FF), // Light Lavender
+                Color(0xFF7E60BF), 
+                Color(0xFFE5D0FF), 
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
