@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'tasks_provider.dart';
+import 'dashboard.dart'; // Import the Dashboard screen
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
@@ -10,6 +11,22 @@ class HistoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final completedTasks = ref.watch(tasksProvider.notifier).completedTasks;
     final deletedTasks = ref.watch(tasksProvider.notifier).deletedTasks;
+
+    int _selectedIndex = 1; // Set the selected index to 1 for History Screen
+
+    // Method to handle BottomNavigationBar item taps
+    void _onItemTapped(int index) {
+      if (index == 0) {
+        // Navigate to Home (Dashboard)
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const Dashboard()),
+        );
+      } else if (index == 1) {
+        // Already on History, so do nothing
+        Navigator.pop(context); // Pop back to the previous screen if necessary
+      }
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -22,6 +39,7 @@ class HistoryScreen extends ConsumerWidget {
           ),
         ),
         centerTitle: true,
+        automaticallyImplyLeading: false, // Prevent the back button
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -69,6 +87,20 @@ class HistoryScreen extends ConsumerWidget {
                     )),
               ],
             ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'History',
+          ),
+        ],
+      ),
     );
   }
 

@@ -1,87 +1,178 @@
+import 'dart:async';  // Import Timer for updating the time every second
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bajo_flutterapp/add_task_screen.dart';
 import 'package:bajo_flutterapp/history_screen.dart';
 import 'tasks_provider.dart';
 import 'edit_task_screen.dart';
+import 'package:intl/intl.dart';  // Import intl package for date formatting
 
-class Dashboard extends ConsumerWidget {
+final searchQueryProvider = StateProvider<String>((ref) => '');
+
+class Dashboard extends ConsumerStatefulWidget {
   const Dashboard({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  _DashboardState createState() => _DashboardState();
+}
+
+class _DashboardState extends ConsumerState<Dashboard> {
+  String currentTime = '';
+  String currentDate = '';
+  late Timer _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    currentDate = _getCurrentDate();
+    currentTime = _getCurrentTime();
+    _startTimer(); // Start the timer when the widget is created
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel(); // Cancel the timer when the widget is disposed
+    super.dispose();
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        currentTime = _getCurrentTime();
+      });
+    });
+  }
+
+  String _getCurrentTime() {
+    final now = DateTime.now();
+    final hour = now.hour % 12;
+    final minute = now.minute.toString().padLeft(2, '0');
+    final second = now.second.toString().padLeft(2, '0');
+    final suffix = now.hour >= 12 ? 'PM' : 'AM';
+    return '$hour:$minute:$second $suffix'; // Include seconds
+  }
+
+  String _getCurrentDate() {
+    final now = DateTime.now();
+    final formatter = DateFormat('MMMM dd, yyyy');
+    return formatter.format(now); // Format date as "November 30, 2024"
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final List<Map<String, dynamic>> tasks = ref.watch(tasksProvider);
+    final String searchQuery = ref.watch(searchQueryProvider);
+
+    // Filter the tasks based on the search query
+    List<Map<String, dynamic>> filteredTasks = tasks.where((task) {
+      return task['title'].toLowerCase().contains(searchQuery.toLowerCase());
+    }).toList();
 
     return Scaffold(
-      appBar: AppBar(
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color.fromARGB(255, 190, 117, 190),
-                Color(0xFFE5D0FF),
-              ],
-            ),
-          ),
-        ),
-        centerTitle: true,
-        elevation: 5,
-        shadowColor: Colors.grey.withOpacity(0.5),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.task, color: Colors.white, size: 30),
-            SizedBox(width: 10),
-            Text(
-              'Taskinator',
-              style: TextStyle(
-                fontSize: 28.0,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                fontFamily: 'RobotoMono',
+      body: Column(
+        children: [
+          // Padding added to add margins on top and both sides of the image
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0),
+            child: Container(
+              height: 200, // You can adjust the height of the container
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20), // Rounded corners
+                image: const DecorationImage(
+                  image: AssetImage('assets/images/purple.jpg'),
+                  fit: BoxFit.cover, // Ensure the image covers the whole area
+                ),
               ),
-            ),
-          ],
-        ),
-        iconTheme: const IconThemeData(
-          color: Colors.white,
-        ),
-      ),
-      body: tasks.isEmpty
-          ? const Center(child: Text('No tasks available.'))
-          : ListView.builder(
-              itemCount: tasks.length,
-              itemBuilder: (context, index) {
-                final task = tasks[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => EditTaskScreen(task: task),
-                      ));
-                    },
-                    child: TaskCard(
-                      task: task,
-                      onComplete: () {
-                        ref
-                            .read(tasksProvider.notifier)
-                            .completeTask(task['id']);
-                      },
-                      onDelete: () {
-                        ref.read(tasksProvider.notifier).deleteTask(task['id']);
-                      },
+              // Stack to overlay the current date and time over the image
+              child: Stack(
+                children: [
+                  Positioned(
+                    left: 20,
+                    bottom: 20,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          currentDate,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          currentTime,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                );
-              },
+                ],
+              ),
             ),
+          ),
+
+          // Search Bar
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: TextField(
+              onChanged: (query) {
+                ref.read(searchQueryProvider.notifier).state = query;
+              },
+              decoration: InputDecoration(
+                labelText: 'Search by Title',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                  borderSide: BorderSide(color: Colors.purple, width: 1.0),
+                ),
+                prefixIcon: const Icon(Icons.search, color: Colors.purple),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Task List
+          Expanded(
+            child: filteredTasks.isEmpty
+                ? const Center(child: Text('No tasks available.'))
+                : ListView.builder(
+                    itemCount: filteredTasks.length,
+                    itemBuilder: (context, index) {
+                      final task = filteredTasks[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => EditTaskScreen(task: task),
+                            ));
+                          },
+                          child: TaskCard(
+                            task: task,
+                            onComplete: () {
+                              ref
+                                  .read(tasksProvider.notifier)
+                                  .completeTask(task['id']);
+                            },
+                            onDelete: () {
+                              ref.read(tasksProvider.notifier).deleteTask(task['id']);
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => const AddTaskScreen(),
+            builder: (context) => AddTaskScreen(),
           ));
         },
         backgroundColor: const Color.fromARGB(255, 190, 117, 190),
@@ -96,6 +187,10 @@ class Dashboard extends ConsumerWidget {
           if (index == 1) {
             Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => const HistoryScreen(),
+            ));
+          } else {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => const Dashboard(),
             ));
           }
         },
