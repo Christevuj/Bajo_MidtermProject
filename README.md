@@ -33,21 +33,27 @@ Ensure you have the following installed:
 Run the following command to check your Flutter environment and fix any issues:
 ```bash
    flutter doctor
+```
 Ensure that all checks are marked as ✅. If any issue arises, follow the recommendations provided by flutter doctor.
 
 **Step 2: Clone the Repository**
 Clone the repository to your local machine:
 ```bash
     git clone https://github.com/Christevuj/Bajo_MidtermProject.git
-    cd bajo_flutterapp
+```
+```bash
+    cd bajo_midtermproject
+```
 
 **Step 3: Install Dependencies**
 Run the following command to fetch and install the required dependencies:
 ```bash
     flutter pub get
+```
 
 **Step 4: Run the Application**
 - Connect a physical device or start a simulator/emulator.
 - Run the application using the following command:
 ```bash
     flutter run
+```
