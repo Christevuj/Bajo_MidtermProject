@@ -38,8 +38,8 @@ Ensure that all checks are marked as ✅. If any issue arises, follow the recomm
 **Step 2: Clone the Repository**
 Clone the repository to your local machine:
 ```bash
-    git clone https://github.com/your-username/bajo_flutterapp.git
-cd bajo_flutterapp
+    git clone https://github.com/Christevuj/Bajo_MidtermProject.git
+    cd bajo_flutterapp
 
 **Step 3: Install Dependencies**
 Run the following command to fetch and install the required dependencies:
